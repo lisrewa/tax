@@ -1,0 +1,938 @@
+Check.aspx.cs
+
+using System;
+using System.Data;
+using System.Configuration;
+using System.Collections;
+using System.Web;
+using System.Web.Security;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Web.UI.WebControls.WebParts;
+using System.Web.UI.HtmlControls;
+using System.Data.SqlClient;
+
+public partial class admin_Check : System.Web.UI.Page
+{
+    SqlConnection cn = new SqlConnection(ConfigurationManager.AppSettings["con"]);
+    string sql;
+    protected void Page_Load(object sender, EventArgs e)
+    {
+       // str = Request.QueryString["taxid"].ToString();
+        cn.Open();
+        if (!IsPostBack)
+        {
+            FillData();
+        }
+    }
+
+    public void FillData()
+    {
+        sql = "select m.taxid,m.fname,m.email,s.sdate from myprofile m,schedule s where m.taxid=s.taxid";
+       // sql = "select m.taxid,m.fname,m.email,d.status,d.dtype,s.sdate from myprofile m,documents d,schedule s where m.taxid="+"'"+str+"'";
+        SqlDataAdapter da = new SqlDataAdapter(sql, cn);
+        DataSet ds = new DataSet();
+        da.Fill(ds);
+        GridView1.DataSource = ds;
+        GridView1.DataBind();
+    }
+}
+
+
+checkdocument.aspx.cs
+
+using System;
+using System.Data;
+using System.Configuration;
+using System.Collections;
+using System.Web;
+using System.Web.Security;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Web.UI.WebControls.WebParts;
+using System.Web.UI.HtmlControls;
+using System.Data.SqlClient;
+
+public partial class admin_CheckDocuments : System.Web.UI.Page
+{
+    SqlConnection cn = new SqlConnection("integrated security=true;database=satya");
+    string sql;
+    string str;
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        cn.Open();
+        str = Request.QueryString["taxid"];
+        if (!IsPostBack)
+        {
+            filldata();
+        }
+    }
+    private void filldata()
+    {
+        
+        SqlDataAdapter da = new SqlDataAdapter("select * from documents where  taxid='"+str+"'", cn);
+        DataSet ds = new DataSet();
+        da.Fill(ds);
+        GridView1.DataSource = ds;
+        GridView1.DataBind();
+    }
+    protected void GridView1_SelectedIndexChanging(object sender, GridViewSelectEventArgs e)
+    {
+        Label lbldoc = (Label)GridView1.Rows[e.NewSelectedIndex].FindControl("Lable1");
+       
+        sql=" update documents set status='Document is Verified' where dtype='"+lbldoc.Text+"' and taxid='" + str + "'";
+        SqlCommand cmd = new SqlCommand(sql, cn);
+        cmd.ExecuteNonQuery();
+        filldata();
+
+    }
+}
+
+
+CheckProfile.aspx.cs 
+
+using System;
+using System.Data;
+using System.Configuration;
+using System.Collections;
+using System.Web;
+using System.Web.Security;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Web.UI.WebControls.WebParts;
+using System.Web.UI.HtmlControls;
+using System.Data.SqlClient;
+
+public partial class admin_MyProfile : System.Web.UI.Page
+{
+    SqlConnection cn = new SqlConnection(ConfigurationManager.AppSettings["con"]);
+    string sql,str;
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        cn.Open();
+        str = Request.QueryString["taxid"].ToString();
+        if (!IsPostBack)
+        {
+            FillData();
+        }
+    }
+
+    public void FillData()
+    {
+        sql = "select * from myprofile where taxid='"+str+"'";
+        SqlDataAdapter da = new SqlDataAdapter(sql, cn);
+        DataSet ds = new DataSet();
+        da.Fill(ds);
+        DetailsView1.DataSource = ds;
+        DetailsView1.DataBind();
+    }
+}
+
+
+
+New.aspx.cs
+
+using System;
+using System.Data;
+using System.Configuration;
+using System.Collections;
+using System.Web;
+using System.Web.Security;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Web.UI.WebControls.WebParts;
+using System.Web.UI.HtmlControls;
+using System.Data.SqlClient;
+
+public partial class admin_new : System.Web.UI.Page
+{
+    SqlConnection cn = new SqlConnection(ConfigurationManager.AppSettings["con"]);
+    string sql;
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        cn.Open();
+        if (!IsPostBack)
+        {
+            //FillData();
+            FillData1();
+        }
+            
+    }
+
+    public void FillData1()
+    {
+        sql = "select taxid,count(*) as count from documents where taxid in(select taxid from myprofile) group by taxid";
+        SqlDataAdapter da = new SqlDataAdapter(sql, cn);
+        DataSet ds = new DataSet();
+        da.Fill(ds);
+        GridView2.DataSource = ds;
+        GridView2.DataBind();
+
+    }
+
+    public void FillData()
+    {
+        //sql = "select m.taxid,m.fname,m.email,s.sdate,d.dtype,d.status from myprofile m,documents d,schedule s where m.taxid=s.taxid and m.taxid=d.taxid";
+        //SqlDataAdapter da = new SqlDataAdapter(sql, cn);
+        //DataSet ds = new DataSet();
+        //da.Fill(ds);
+        //GridView1.DataSource = ds;
+        //GridView1.DataBind();
+    }
+}
+
+
+Schedule.aspx.cs
+
+using System;
+using System.Data;
+using System.Configuration;
+using System.Collections;
+using System.Web;
+using System.Web.Security;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Web.UI.WebControls.WebParts;
+using System.Web.UI.HtmlControls;
+using System.Data.SqlClient;
+
+
+public partial class admin_Scheduled : System.Web.UI.Page
+{
+    SqlConnection cn = new SqlConnection(ConfigurationManager.AppSettings["con"]);
+    string sql;
+    static string taxid;
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        cn.Open();
+        GridView1.Visible = false;
+        GridView2.Visible = false;
+
+       // Calendar1.Visible = false;
+        //Label1.Visible = false;
+        //Label2.Visible = false;
+        //Label3.Visible = false;
+        //Label4.Visible = false;
+        //Label5.Visible = false;
+        //Label6.Visible = false;
+        //Label7.Visible = false;
+        //TextBox2.Visible = false;
+        //DropDownList2.Visible = false;
+        //Button1.Visible = false;
+        //Button2.Visible = false;
+        if (!IsPostBack)
+        {
+            FillData();
+            FillData1();
+        }
+    }
+    public void FillData()
+    {
+        sql = "select distinct m.taxid, m.fname,s.sdate,s.confimdate from myprofile m,schedule s where m.taxid=s.taxid ";
+        SqlDataAdapter da = new SqlDataAdapter(sql, cn);
+        DataSet ds = new DataSet();
+        da.Fill(ds);
+        GridView1.DataSource = ds;
+        GridView1.DataBind();
+    }
+
+    public void FillData1()
+    {
+        sql = "select distinct m.taxid, m.fname,s.sdate,s.confimdate,s.assign from myprofile m,schedule s where m.taxid=s.taxid ";
+        SqlDataAdapter da = new SqlDataAdapter(sql, cn);
+        DataSet ds = new DataSet();
+        da.Fill(ds);
+        GridView2.DataSource = ds;
+        GridView2.DataBind();
+    }
+
+    protected void GridView1_SelectedIndexChanging(object sender, GridViewSelectEventArgs e)
+    {
+        Label l=(Label)GridView1.Rows[e.NewSelectedIndex].FindControl("Label1");
+        taxid = l.Text;
+        sql = "select distinct m.taxid, m.fname,s.sdate,s.confimdate from myprofile m,schedule s where m.taxid="+"'"+l.Text+"'";
+        SqlCommand cmd = new SqlCommand(sql, cn);
+        SqlDataReader dr = cmd.ExecuteReader();
+        if (dr.Read())
+        {
+            Label4.Text = dr[1].ToString();
+            Label5.Text = dr[2].ToString();
+        }
+        dr.Close();
+    }
+    protected void Button3_Click(object sender, EventArgs e)
+    {
+        GridView1.Visible = true;
+        Label1.Visible = true;
+        Label2.Visible = true;
+        Label3.Visible = true;
+        Label4.Visible = true;
+        Label5.Visible = true;
+        Label6.Visible = true;
+        Label7.Visible = true;
+        TextBox2.Visible = true;
+        DropDownList2.Visible = true;
+        Button1.Visible = true;
+        Button2.Visible = true;
+    }
+    protected void Button4_Click(object sender, EventArgs e)
+    {
+        GridView2.Visible = true;
+        Label1.Visible = false;
+        Label2.Visible = false;
+        Label3.Visible = false;
+        Label4.Visible = false;
+        Label5.Visible = false;
+        Label6.Visible = false;
+        Label7.Visible = false;
+        TextBox2.Visible = false;
+        DropDownList2.Visible = false;
+        Button1.Visible = false;
+        Button2.Visible = false;
+    }
+    protected void Button2_Click(object sender, EventArgs e)
+    {
+        Calendar1.Visible = true;
+    }
+    //Label l;
+    protected void Button1_Click(object sender, EventArgs e)
+    {
+
+        //for (int i = 0; i < GridView2.Rows.Count - 1; i++)
+        //{
+        //    l = (Label)GridView2.Rows[i].FindControl("Label2");
+        //}
+            //l = (Label)grv.FindControl("Label2");
+        //foreach (GridViewRow gr in GridView1.Rows)
+        //{
+        //    l=(Label)gr.FindControl("
+        //}
+        sql = "update schedule set status='Yes',confimdate='" + TextBox2.Text + "',assign='" + DropDownList2.SelectedItem.Text + "' where taxid='" +taxid+ "'";
+        SqlCommand cmd = new SqlCommand(sql, cn);
+        cmd.ExecuteNonQuery();
+        FillData1();
+    }
+    protected void Calendar1_SelectionChanged(object sender, EventArgs e)
+    {
+        if (Calendar1.SelectedDate <= DateTime.Now)
+        {
+            Label7.Text = "Your Selected Date is not Correct";
+        }
+        else
+        {
+            TextBox2.Text = Calendar1.SelectedDate.ToString();
+        }
+    }
+}
+
+
+
+
+
+
+
+
+                                                        CLIENT MODULE
+
+Login.aspx.cs
+
+using System;
+using System.Data;
+using System.Configuration;
+using System.Collections;
+using System.Web;
+using System.Web.Security;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Web.UI.WebControls.WebParts;
+using System.Web.UI.HtmlControls;
+using System.Data.SqlClient;
+
+public partial class Login : System.Web.UI.Page
+{
+    SqlConnection cn = new SqlConnection(ConfigurationManager.AppSettings["con"]);
+    string sql,sql1;
+       
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        cn.Open();
+    }
+    
+    protected void btnlogin_Click(object sender, EventArgs e)
+    {
+        if ((txtuserid.Text == "admin") && (txtpwd.Text == "babu"))
+        {
+            Response.Redirect("~/admin/adminpage.aspx");
+        }
+        else
+        {
+            sql = "select taxid from taxregistration where userid='" + txtuserid.Text + "' and pwd='" + txtpwd.Text + "'";
+            SqlCommand cmd = new SqlCommand(sql, cn);
+            SqlDataReader dr = cmd.ExecuteReader();
+            if (dr.Read())
+            {
+                Session["taxid"] = dr[0].ToString();
+                Response.Redirect("welcome.aspx");
+            }
+
+            else
+            {
+                sql1 = "select userid from interviewer where userid='" + txtuserid.Text + "' and pwd='" + txtpwd.Text + "'";
+                SqlCommand cmd1 = new SqlCommand(sql1, cn);
+                SqlDataReader dr1 = cmd1.ExecuteReader();
+                if (dr1.Read())
+                {
+                    Session["userid"] = dr1[0].ToString();
+                    Response.Redirect("~/Interviewer/Interview.aspx");
+                }
+                else
+                {
+                    lblmsg.Text = "Invalid UserID and Password";
+                }
+
+                dr1.Close();
+            }
+            dr.Close();
+           
+        }
+    }
+}
+
+
+Myprofile.aspx.cs
+
+using System;
+using System.Data;
+using System.Configuration;
+using System.Collections;
+using System.Web;
+using System.Web.Security;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Web.UI.WebControls.WebParts;
+using System.Web.UI.HtmlControls;
+using System.Data.SqlClient;
+
+public partial class MyProfile : System.Web.UI.Page
+{
+    SqlConnection cn = new SqlConnection(ConfigurationManager.AppSettings["con"]);
+    string sql,sql1,sql2,sql3,str;
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        
+        lbltaxid.Text = Session["taxid"].ToString();
+        cn.Open();
+        if (!IsPostBack)
+        {
+            FillData(); 
+        }
+    }
+
+    public void FillData()
+    {
+        sql = "select * from myprofile where taxid=" + "'" + Session["taxid"] + "'";
+        ///Response.Write(sql);
+        SqlCommand cmd = new SqlCommand(sql, cn);
+        SqlDataReader dr = cmd.ExecuteReader();
+        if (dr.Read())
+        {
+            lbltaxid.Text = dr[0].ToString();
+            txtfname.Text = dr[1].ToString();
+            txtmname.Text = dr[2].ToString();
+            txtlname.Text = dr[3].ToString();
+            radiogender.Text = dr[4].ToString();
+            txtdob.Text = dr[5].ToString();
+            txtssn.Text = dr[6].ToString();
+            txtaddress.Text = dr[7].ToString();
+            txtcity.Text = dr[8].ToString();
+            txtstate.Text = dr[9].ToString();
+            txtzip.Text = dr[10].ToString();
+            txtemail.Text = dr[11].ToString();
+            listoccuiption.Text = dr[12].ToString();
+            radiomaritalstatus.Text = dr[13].ToString();
+            radiodependency.Text = dr[14].ToString();
+        }
+    }
+    protected void btnregister_Click(object sender, EventArgs e)
+    {
+        str = "New";
+       
+        //lbltaxid.Text = Session["taxid"].ToString();
+        sql = "select taxid from myprofile where taxid=" + "'" + Session["taxid"] + "'";
+        SqlCommand cmd = new SqlCommand(sql, cn);
+        SqlDataReader dr=cmd.ExecuteReader();
+        if (dr.Read())
+        {
+            sql1 = "update myprofile set fname='" + txtfname.Text + "',mname='" + txtmname.Text + "',lname='" + txtlname.Text + "',gender='" + radiogender.SelectedItem.Text + "',dob='" + txtdob.Text + "',ssnitin='" + txtssn.Text + "',address='" + txtaddress.Text + "',city='" + txtcity.Text + "',state='" + txtstate.Text + "',zip='" + txtzip.Text + "',email='" + txtemail.Text + "',occuiption ='" + listoccuiption.SelectedItem.Text + "',mstatus='" + radiomaritalstatus.SelectedItem.Text + "',dependency='" + radiodependency.SelectedItem.Text + "' where taxid=" + "'" + Session["taxid"] + "'";
+            SqlCommand cmd1 = new SqlCommand(sql1, cn);
+            cmd1.ExecuteNonQuery();
+        }
+        else if (txtssn.Text == "")
+        {
+            sql2 = "insert myprofile(taxid,fname,mname,lname,gender,dob,address,city,state,zip,email,occuiption,mstatus,dependency,ctype) values('" + Session["taxid"].ToString() + "','" + txtfname.Text + "','" + txtmname.Text + "','" + txtlname.Text + "','" + radiogender.SelectedItem.Text + "','" + txtdob.Text + "','" + txtaddress.Text + "','" + txtcity.Text + "','" + txtstate.Text + "','" + txtzip.Text + "','" + txtemail.Text + "','" + listoccuiption.SelectedItem.Text + "','" + radiomaritalstatus.SelectedItem.Text + "','" + radiodependency.SelectedItem.Text + "','" + str + "')";
+            //Label2.Text = sql2;
+            SqlCommand cmd2 = new SqlCommand(sql2, cn);
+            cmd2.ExecuteNonQuery();
+            //Clear();
+        }
+        else
+        {
+            sql3 = "insert myprofile(taxid,fname,mname,lname,gender,dob,ssnitin,address,city,state,zip,email,occuiption,mstatus,dependency,ctype) values('" + Session["taxid"].ToString() + "','" + txtfname.Text + "','" + txtmname.Text + "','" + txtlname.Text + "','" + radiogender.SelectedItem.Text + "','" + txtdob.Text + "','" + txtssn.Text + "','" + txtaddress.Text + "','" + txtcity.Text + "','" + txtstate.Text + "','" + txtzip.Text + "','" + txtemail.Text + "','" + listoccuiption.SelectedItem.Text + "','" + radiomaritalstatus.SelectedItem.Text + "','" + radiodependency.SelectedItem.Text + "','" + str + "')";
+            //Label2.Text = sql2;
+            SqlCommand cmd3 = new SqlCommand(sql3, cn);
+            cmd3.ExecuteNonQuery();
+        }
+        dr.Close();
+    }
+    public void Clear()
+    {
+        txtfname.Text = "";
+        txtmname.Text = "";
+        txtlname.Text = "";
+        foreach (ListItem li in radiogender.Items)
+        {
+            li.Selected = false;
+        }
+        txtdob.Text = "";
+        txtssn.Text = "";
+        txtaddress.Text = "";
+        txtcity.Text = "";
+        txtstate.Text = "";
+        txtzip.Text = "";
+        txtemail.Text = "";
+        foreach (ListItem li1 in listoccuiption.Items)
+        {
+            li1.Selected = false;
+        }
+        foreach (ListItem li2 in radiomaritalstatus.Items)
+        {
+            li2.Selected  = false;
+        }
+        foreach (ListItem li3 in radiodependency.Items)
+        {
+            li3.Selected = false;
+        }
+    }
+    protected void radiomaritalstatus_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        if (radiomaritalstatus.SelectedItem.Text == "Marrried")
+        {
+            Response.Write("<script type='text/javascript'>");
+            Response.Write("window.open('Spouse.aspx')");
+            Response.Write("</script>");
+        }
+    }
+    protected void radiodependency_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        if (radiodependency.SelectedItem.Text == "Yes")
+        {
+            Response.Write("<script type='text/javascript'>");
+            Response.Write("window.open('Dependent.aspx')");
+            Response.Write("</script>");
+        }
+    }
+}
+
+
+
+
+
+Spouse.aspx.cs
+
+
+using System;
+using System.Data;
+using System.Configuration;
+using System.Collections;
+using System.Web;
+using System.Web.Security;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Web.UI.WebControls.WebParts;
+using System.Web.UI.HtmlControls;
+using System.Data.SqlClient;
+
+public partial class Spouse : System.Web.UI.Page
+{
+
+    SqlConnection cn = new SqlConnection(ConfigurationManager.AppSettings["con"]);
+    string sql;
+    string str;
+    protected void Page_Load(object sender, EventArgs e)
+    {
+
+        cn.Open();
+        if (!IsPostBack)
+        {
+            FillData();
+        }
+    }
+    public void FillData()
+    {
+        sql = "select * from spouse where taxid=" + "'" + Session["taxid"] + "'";
+        SqlCommand cmd = new SqlCommand(sql, cn);
+        SqlDataReader dr = cmd.ExecuteReader();
+        if (dr.Read())
+        {
+            txtfname.Text = dr[1].ToString();
+            txtmname.Text = dr[2].ToString();
+            txtlname.Text = dr[3].ToString();
+            txtdob.Text = dr[4].ToString();
+            occupationdropdownlist.Text = dr[5].ToString();
+            string str = dr[6].ToString();
+            if (str == "Yes")
+            {
+                checkssntax.Checked = true;
+            }
+            else
+                checkssntax.Checked = false;
+        }
+       
+    }
+
+    protected void btnsubmit_Click(object sender, EventArgs e)
+    {
+        if (checkssntax.Checked == true)
+            str = "Yes";
+        else
+        
+            str = "No";
+
+        sql = "insert into spouse values('" + Session["taxid"] + "','" + txtfname.Text + "','" + txtmname.Text + "','" + txtlname.Text + "','" + txtdob.Text + "','" + occupationdropdownlist.SelectedItem.Text + "','" + str + "')";
+        SqlCommand cmd = new SqlCommand(sql, cn);
+        cmd.ExecuteNonQuery();
+
+       
+
+        Response.Write("<script type='text/javascript'>");
+        Response.Write("window.close('Spouse.aspx')");
+        Response.Write("</script>");
+    }
+    protected void checkssntax_CheckedChanged(object sender, EventArgs e)
+    {
+        if (checkssntax.Checked == true)
+        {
+            Response.Write("<script type='text/javascript'>");
+            Response.Write("window.open('ITINSpouse.aspx')");
+            Response.Write("</script>");
+
+            Session["fname"] = txtfname.Text;
+            Session["mname"] = txtmname.Text;
+            Session["lname"] = txtlname.Text;
+        }
+    }
+    protected void txtfname_TextChanged(object sender, EventArgs e)
+    {
+
+    }
+}
+
+ITINSpouse.aspx.cs
+
+using System;
+using System.Data;
+using System.Configuration;
+using System.Collections;
+using System.Web;
+using System.Web.Security;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Web.UI.WebControls.WebParts;
+using System.Web.UI.HtmlControls;
+using System.Data.SqlClient;
+
+public partial class ITIN : System.Web.UI.Page
+{
+    SqlConnection cn = new SqlConnection(ConfigurationManager.AppSettings["con"]);
+    //SqlConnection cn =new SqlConnection  ("integrated security=true;database=satya");
+    string sql;
+   
+    protected void Page_Load(object sender, EventArgs e)
+    {
+       
+
+        cn.Open();
+        if (!IsPostBack)
+        {
+           FillData();
+        }
+    }
+    public void FillData()
+    {
+        sql = "select * from itinspouse where taxid=" + "'" + Session["taxid"] + "'";
+        SqlCommand cmd = new SqlCommand(sql, cn);
+        SqlDataReader dr = cmd.ExecuteReader();
+        if (dr.Read())
+        {
+            txtfname.Text = dr[1].ToString();
+            txtmname.Text = dr[2].ToString();
+            txtlname.Text = dr[3].ToString();
+            txtpassportno.Text = dr[4].ToString();
+            txtpassportedate.Text = dr[5].ToString();
+            txtvisano.Text = dr[6].ToString();
+            txtvisaedate.Text = dr[7].ToString();
+            txtplaceofbirth.Text = dr[8].ToString();
+            txtaddressinthepassport.Text = dr[9].ToString();
+            txtdateofentryusa.Text = dr[10].ToString();
+        }
+        else
+        {
+            txtfname.Text = Session["fname"].ToString();
+            txtmname.Text = Session["mname"].ToString();
+            txtlname.Text = Session["lname"].ToString();
+        }
+        dr.Close();
+    }
+    protected void btnsubmit_Click(object sender, EventArgs e)
+    {
+        sql = "insert into itinspouse values('" + Session["taxid"] + "','" + txtfname.Text + "','" + txtmname.Text + "','" + txtlname.Text + "','" + txtpassportno.Text + "','" + txtpassportedate.Text + "','" + txtvisano.Text + "','" + txtvisaedate.Text + "','" + txtplaceofbirth.Text + "','" + txtaddressinthepassport.Text + "','" + txtdateofentryusa.Text + "')";
+        SqlCommand cmd = new SqlCommand(sql, cn);
+        cmd.ExecuteNonQuery();
+
+        Response.Write("<script type='text/javascript'>");
+        Response.Write("window.close('ITINSpouse.aspx')");
+        Response.Write("</script>");
+    }
+}
+
+
+
+Dependent.aspx.cs
+
+
+using System;
+using System.Data;
+using System.Configuration;
+using System.Collections;
+using System.Web;
+using System.Web.Security;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Web.UI.WebControls.WebParts;
+using System.Web.UI.HtmlControls;
+using System.Data.SqlClient;
+
+public partial class Dependent : System.Web.UI.Page
+{
+    SqlConnection cn = new SqlConnection(ConfigurationManager.AppSettings["con"]);
+    string sql,sql1,str;
+    static DataSet ds;
+    static int n;
+    
+   
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        cn.Open();
+        lblother.Visible = false;
+        txtother.Visible = false;
+        lblmsg3.Visible = false;
+        if (!IsPostBack)
+        {
+            FillData();
+            FillData1();
+        }
+    }
+
+    public void FillData1()
+    {
+        sql = "select * from dependent";
+        SqlDataAdapter da = new SqlDataAdapter(sql, cn);
+        ds = new DataSet();
+        da.Fill(ds, "dependent");
+    }
+
+    private void GetRecord(int n)
+    {
+        txtfname.Text = ds.Tables[0].Rows[n].ItemArray[1].ToString();
+        txtmname.Text = ds.Tables[0].Rows[n].ItemArray[2].ToString();
+        txtlname.Text = ds.Tables[0].Rows[n].ItemArray[3].ToString();
+        droprelation.Text = ds.Tables[0].Rows[n].ItemArray[4].ToString();
+        txtother.Text = ds.Tables[0].Rows[n].ItemArray[5].ToString();
+        txtdob.Text = ds.Tables[0].Rows[n].ItemArray[6].ToString();
+        string str = ds.Tables[0].Rows[n].ItemArray[7].ToString();
+        if (str == "Yes")
+        {
+            checkssntax.Checked = true;
+        }
+        else
+        {
+            checkssntax.Checked = false;
+        }
+        //checkssntax.Text = ds.Tables[0].Rows[n].ItemArray[7].ToString();
+        txtnoofyear.Text = ds.Tables[0].Rows[n].ItemArray[8].ToString();
+    }
+
+    public void FillData()
+    {
+        sql = "select * from dependent where taxid=" + "'" + Session["taxid"].ToString() + "'";
+        SqlCommand cmd = new SqlCommand(sql, cn);
+        SqlDataReader dr = cmd.ExecuteReader();
+        if (dr.Read())
+        {
+            txtfname.Text = dr[1].ToString();
+            txtmname.Text = dr[2].ToString();
+            txtlname.Text = dr[3].ToString();
+            droprelation.Text = dr[4].ToString();
+            txtother.Text = dr[5].ToString();
+            txtdob.Text = dr[6].ToString();
+            string str = dr[7].ToString();
+            if (str == "Yes")
+            {
+                checkssntax.Checked = true;
+            }
+            else
+            {
+                checkssntax.Checked = false;
+            }
+            txtnoofyear.Text = dr[8].ToString();
+        }
+    }
+    protected void btnsubmit_Click(object sender, EventArgs e)
+    {
+        if (checkssntax.Checked == true)
+            str = "Yes";
+        else
+            str = "No";
+
+        if (droprelation.SelectedItem.Text == "Other")
+        {
+            sql = "insert into dependent values('" + Session["taxid"] + "','" + txtfname.Text + "','" + txtmname.Text + "','" + txtlname.Text + "','" + droprelation.SelectedItem.Text + "','" + txtother.Text + "','" + txtdob.Text + "','" + str + "','" + txtnoofyear.Text + "')";
+            SqlCommand cmd = new SqlCommand(sql, cn);
+            cmd.ExecuteNonQuery();
+        }
+        else
+        {
+            sql1 = "insert into dependent(taxid,fname,mname,lname,relation,dob,ssnitin,noofyearsinusa) values('" + Session["taxid"] + "','" + txtfname.Text + "','" + txtmname.Text + "','" + txtlname.Text + "','" + droprelation.SelectedItem.Text + "','" + txtdob.Text + "','" + str + "','" + txtnoofyear.Text + "')";
+            SqlCommand cmd1 = new SqlCommand(sql1, cn);
+            cmd1.ExecuteNonQuery();
+        }
+
+        Response.Write("<script type='text/javascript'>");
+        Response.Write("window.close('Dependent.aspx')");
+        Response.Write("</script>");
+    }
+    protected void droprelation_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        if (droprelation.SelectedItem.Text == "Other")
+        {
+            lblother.Visible = true;
+            txtother.Visible = true;
+        }
+    }
+    protected void checkssntax_CheckedChanged(object sender, EventArgs e)
+    {
+        if (checkssntax.Checked == true)
+        {
+            Response.Write("<script type='text/javascript'>");
+            Response.Write("window.open('ITINDependent.aspx')");
+            Response.Write("</script>");
+            
+            
+                    //Session["fname"] = txtfname.Text;
+                    //Session["mname"] = txtmname.Text;
+                    //Session["lname"] = txtlname.Text;
+            
+        }
+    }
+    protected void btnnext_Click(object sender, EventArgs e)
+    {
+        if (n < ds.Tables[0].Rows.Count - 1)
+        {
+            n += 1;
+            GetRecord(n);
+        }
+        else
+        {
+            lblmsg3.Visible = true;
+            lblmsg3.Text = "This is Last Record";
+        }
+    }
+    protected void btnprevious_Click(object sender, EventArgs e)
+    {
+        if (n > 0)
+        {
+            n -= 1;
+            GetRecord(n);
+        }
+        else
+        {
+            lblmsg3.Visible = true;
+            lblmsg3.Text = "This is First Record";
+        }
+    }
+}
+
+
+ITINDependent.aspx.cs
+
+
+using System;
+using System.Data;
+using System.Configuration;
+using System.Collections;
+using System.Web;
+using System.Web.Security;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Web.UI.WebControls.WebParts;
+using System.Web.UI.HtmlControls;
+using System.Data.SqlClient;
+
+public partial class ITINDependent : System.Web.UI.Page
+{
+    SqlConnection cn = new SqlConnection(ConfigurationManager.AppSettings["con"]);
+    string sql;
+   
+    protected void Page_Load(object sender, EventArgs e)
+    {
+       
+
+        cn.Open();
+        if (!IsPostBack)
+        {
+            FillData();
+        }
+    }
+    public void FillData()
+    {
+        sql = "select * from itindependent where taxid=" + "'" + Session["taxid"].ToString()+ "'";
+        SqlCommand cmd = new SqlCommand(sql, cn);
+        SqlDataReader dr = cmd.ExecuteReader();
+        if (dr.Read())
+        {
+            txtfname.Text = dr[1].ToString();
+            txtmname.Text = dr[2].ToString();
+            txtlname.Text = dr[3].ToString();
+            txtpassportno.Text = dr[4].ToString();
+            txtpassportedate.Text = dr[5].ToString();
+            txtvisano.Text = dr[6].ToString();
+            txtvisaedate.Text = dr[7].ToString();
+            txtplaceofbirth.Text = dr[8].ToString();
+            txtaddressinthepassport.Text = dr[9].ToString();
+            txtdateofentryusa.Text = dr[10].ToString();
+        }
+        //else
+        //{
+        //    //if(Session["fname"].ToString()!= "")
+        //    //{
+        //    txtfname.Text = Session["fname"].ToString();
+        //    txtmname.Text = Session["mname"].ToString();
+        //    txtlname.Text = Session["lname"].ToString();
+        //    //}
+        //}
+        dr.Close();
+    }
+    protected void btnsubmit_Click(object sender, EventArgs e)
+    {
+        sql = "insert into itindependent values('" + Session["taxid"] + "','" + txtfname.Text + "','" + txtmname.Text + "','" + txtlname.Text + "','" + txtpassportno.Text + "','" + txtpassportedate.Text + "','" + txtvisano.Text + "','" + txtvisaedate.Text + "','" + txtplaceofbirth.Text + "','" + txtaddressinthepassport.Text + "','" + txtdateofentryusa.Text + "')";
+        SqlCommand cmd = new SqlCommand(sql, cn);
+        cmd.ExecuteNonQuery();
+        
+        
+        Response.Write("<script type='text/javascript'>");
+        Response.Write("window.close('ITINDependent.aspx')");
+        Response.Write("</script>");
+    }
+}
+
+
